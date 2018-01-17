@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import time
 
 import numpy as np
@@ -130,7 +133,7 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
 
 def fig2data(fig):
     """
-    brief Convert a Matplotlib figure to a 4D numpy array with RGBA 
+    brief Convert a Matplotlib figure to a 4D numpy array with RGBA
     channels and return it
 
     @param fig： a matplotlib figure
@@ -169,7 +172,7 @@ def visdom_bbox(*args, **kwargs):
 class Visualizer(object):
     """
     wrapper for visdom
-    you can still access naive visdom function by 
+    you can still access naive visdom function by
     self.line, self.scater,self._send,etc.
     due to the implementation of `__getattr__`
     """

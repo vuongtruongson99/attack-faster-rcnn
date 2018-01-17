@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from collections import namedtuple
 from string import Template
 
@@ -119,7 +122,7 @@ def test_roi_module():
         assert neq.sum() == 0, 'test failed: %s' % info
 
     # chainer version,if you're going to run this
-    # pip install chainer 
+    # pip install chainer
     import chainer.functions as F
     from chainer import Variable
     x_cn = Variable(t2c(x))

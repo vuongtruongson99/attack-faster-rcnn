@@ -1,9 +1,7 @@
 import os
-
 import ipdb
 import matplotlib
 from tqdm import tqdm
-
 from utils.config import opt
 from data.dataset import Dataset, TestDataset, inverse_normalize
 from model import FasterRCNNVGG16
@@ -20,9 +18,7 @@ import resource
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (20480, rlimit[1]))
-
 matplotlib.use('agg')
-
 
 def eval(dataloader, faster_rcnn, test_num=10000):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
@@ -43,7 +39,6 @@ def eval(dataloader, faster_rcnn, test_num=10000):
         gt_bboxes, gt_labels, gt_difficults,
         use_07_metric=True)
     return result
-
 
 def train(**kwargs):
     opt._parse(kwargs)
@@ -120,11 +115,9 @@ def train(**kwargs):
                                                   str(eval_result['map']),
                                                   str(trainer.get_meter_data()))
         trainer.vis.log(log_info)
-        if epoch == 13: 
+        if epoch == 13:
             break
-
 
 if __name__ == '__main__':
     import fire
-
     fire.Fire()

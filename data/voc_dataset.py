@@ -1,10 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
-
 import numpy as np
-
 from .util import read_image
-
 
 class VOCBboxDataset:
     """Bounding box dataset for PASCAL `VOC`_.
@@ -46,7 +43,7 @@ class VOCBboxDataset:
     * :obj:`difficult.dtype == numpy.bool`
 
     Args:
-        data_dir (string): Path to the root of the training data. 
+        data_dir (string): Path to the root of the training data.
             i.e. "/data/image/voc/VOCdevkit/VOC2007/"
         split ({'train', 'val', 'trainval', 'test'}): Select a split of the
             dataset. :obj:`test` split is only available for
