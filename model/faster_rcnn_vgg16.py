@@ -1,3 +1,4 @@
+from __future__ import division
 import torch as t
 from torch import nn
 from torchvision.models import vgg16
@@ -54,11 +55,11 @@ class FasterRCNNVGG16(FasterRCNN):
     feat_stride = 16  # downsample 16x for output of conv5 in vgg16
 
     def __init__(self,
-                 n_fg_class=20,
+                 n_fg_class=1,
                  ratios=[0.5, 1, 2],
                  anchor_scales=[8, 16, 32]
                  ):
-                 
+
         extractor, classifier = decom_vgg16()
 
         rpn = RegionProposalNetwork(
@@ -87,7 +88,7 @@ class VGG16RoIHead(nn.Module):
     This class is used as a head for Faster R-CNN.
     This outputs class-wise localizations and classification based on feature
     maps in the given RoIs.
-    
+
     Args:
         n_class (int): The number of classes possibly including the background.
         roi_size (int): Height and width of the feature maps after RoI-pooling.

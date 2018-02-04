@@ -5,7 +5,7 @@ import cupy as cp
 from utils import array_tool as at
 from model.utils.bbox_tools import loc2bbox
 from model.utils.nms import non_maximum_suppression
-
+import pdb
 from torch import nn
 from data.dataset import preprocess
 from torch.nn import functional as F
@@ -146,10 +146,10 @@ class FasterRCNN(nn.Module):
         """
         if preset == 'visualize':
             self.nms_thresh = 0.3
-            self.score_thresh = 0.7
+            self.score_thresh = 0.9
         elif preset == 'evaluate':
             self.nms_thresh = 0.3
-            self.score_thresh = 0.05
+            self.score_thresh = 0.9
         else:
             raise ValueError('preset must be visualize or evaluate')
 

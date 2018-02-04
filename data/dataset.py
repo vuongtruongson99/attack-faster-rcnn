@@ -1,11 +1,13 @@
+from __future__ import division
 import torch as t
 from .voc_dataset import VOCBboxDataset
+from .wider_dataset import WIDERBboxDataset
 from skimage import transform as sktsf
 from torchvision import transforms as tvtsf
 from . import util
 import numpy as np
 from utils.config import opt
-
+import pdb
 
 def inverse_normalize(img):
     if opt.caffe_pretrain:
@@ -65,6 +67,7 @@ def preprocess(img, min_size=600, max_size=1000):
     scale2 = max_size / max(H, W)
     scale = min(scale1, scale2)
     img = img / 255.
+
     img = sktsf.resize(img, (C, H * scale, W * scale), mode='reflect')
     # both the longer and shorter should be less than
     # max_size and min_size
@@ -101,7 +104,11 @@ class Transform(object):
 class Dataset:
     def __init__(self, opt):
         self.opt = opt
-        self.db = VOCBboxDataset(opt.voc_data_dir)
+        if opt.data == 'wider':
+            self.db = WIDERBboxDataset(opt.wider_label_dir,\
+                    opt.wider_data_dir,opt.wider_fname_mat)
+        else:
+            self.db = VOCBboxDataset(opt.voc_data_dir)
         self.tsf = Transform(opt.min_size, opt.max_size)
 
     def __getitem__(self, idx):
@@ -119,7 +126,8 @@ class Dataset:
 class TestDataset:
     def __init__(self, opt, split='test', use_difficult=True):
         self.opt = opt
-        self.db = VOCBboxDataset(opt.voc_data_dir, split=split, use_difficult=use_difficult)
+        self.db = WIDERBboxDataset(opt.wider_label_dir,\
+                opt.wider_val_data_dir,opt.wider_val_fname_mat)
 
     def __getitem__(self, idx):
         ori_img, bbox, label, difficult = self.db.get_example(idx)

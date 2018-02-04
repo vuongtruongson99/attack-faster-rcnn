@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import time
-
-import numpy as np
 import matplotlib
+matplotlib.use('Agg')
+import time
+import pdb
+import numpy as np
 import torch as t
 import visdom
 
-matplotlib.use('Agg')
 from matplotlib import pyplot as plot
 
 # from data.voc_dataset import VOC_BBOX_LABEL_NAMES
 
+
+WIDER_BBOX_LABEL_NAMES = (
+    'Face')
 
 VOC_BBOX_LABEL_NAMES = (
     'fly',
@@ -91,7 +94,7 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
 
     """
 
-    label_names = list(VOC_BBOX_LABEL_NAMES) + ['bg']
+    label_names = list(WIDER_BBOX_LABEL_NAMES) + ['bg']
     # add for index `-1`
     if label is not None and not len(bbox) == len(label):
         raise ValueError('The length of label must be same as that of bbox')
@@ -129,7 +132,6 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
                     style='italic',
                     bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 0})
     return ax
-
 
 def fig2data(fig):
     """

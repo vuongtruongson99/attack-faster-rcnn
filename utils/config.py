@@ -8,8 +8,13 @@ from pprint import pprint
 class Config:
     # data
     voc_data_dir = '/home/joey/Desktop/faster-rcnn.pytorch/VOCdevkit/VOC2007/'
-    min_size = 600  # image resize
-    max_size = 1000 # image resize
+    wider_label_dir = '/home/joey/Desktop/simple-faster-rcnn-pytorch/datasets/wider_face_split'
+    wider_data_dir =  '/home/joey/Desktop/simple-faster-rcnn-pytorch/datasets/WIDER_train/images'
+    wider_fname_mat = 'wider_face_train.mat'
+    wider_val_data_dir = '/home/joey/Desktop/simple-faster-rcnn-pytorch/datasets/WIDER_val/images'
+    wider_val_fname_mat = 'wider_face_val.mat'
+    min_size = 300  # image resize
+    max_size = 400 # image resize
     num_workers = 8
     test_num_workers = 8
 
@@ -30,22 +35,22 @@ class Config:
     plot_every = 40  # vis every N iter
 
     # preset
-    data = 'voc'
+    data = 'wider'
     pretrained_model = 'vgg16'
 
     # training
     epoch = 14
 
 
-    use_adam = False # Use Adam optimizer
+    use_adam = True # Use Adam optimizer
     use_chainer = False # try match everything as chainer
     use_drop = False # use dropout in RoIHead
     # debug
     debug_file = '/tmp/debugf'
 
-    test_num = 10000
+    test_num = 3000
     # model
-    load_path = None
+    load_path = '/home/joey/Desktop/simple-faster-rcnn-pytorch/checkpoints/fasterrcnn_01252154_13'
 
     caffe_pretrain = False # use caffe pretrained model instead of torchvision
     caffe_pretrain_path = 'checkpoints/vgg16-caffe.pth'

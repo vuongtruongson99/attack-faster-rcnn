@@ -3,7 +3,7 @@
 
 import numpy as np
 import cupy as cp
-
+import pdb
 from model.utils.bbox_tools import bbox2loc, bbox_iou, loc2bbox
 from model.utils.nms import non_maximum_suppression
 
@@ -204,7 +204,14 @@ class AnchorTargetCreator(object):
 
         n_anchor = len(anchor)
         inside_index = _get_inside_index(anchor, img_H, img_W)
-        anchor = anchor[inside_index]
+        if inside_index.size == 0:
+            anchor[:,0] = np.clip(anchor[:,0],a_min=0,a_max=None)
+            anchor[:,1] = np.clip(anchor[:,1],a_min=0,a_max=None)
+            anchor[:,2] = np.clip(anchor[:,2],a_min=None,a_max=img_H)
+            anchor[:,3] = np.clip(anchor[:,3],a_min=None,a_max=img_W)
+            inside_index = _get_inside_index(anchor, img_H, img_W)
+        else:
+            anchor = anchor[inside_index]
         argmax_ious, label = self._create_label(
             inside_index, anchor, bbox)
 
@@ -221,9 +228,11 @@ class AnchorTargetCreator(object):
         # label: 1 is positive, 0 is negative, -1 is dont care
         label = np.empty((len(inside_index),), dtype=np.int32)
         label.fill(-1)
-
-        argmax_ious, max_ious, gt_argmax_ious = \
-            self._calc_ious(anchor, bbox, inside_index)
+        try:
+            argmax_ious, max_ious, gt_argmax_ious = \
+                self._calc_ious(anchor, bbox, inside_index)
+        except:
+            return inside_index,label
 
         # assign negative labels first so that positive labels can clobber them
         label[max_ious < self.neg_iou_thresh] = 0
@@ -257,7 +266,11 @@ class AnchorTargetCreator(object):
         ious = bbox_iou(anchor, bbox)
         argmax_ious = ious.argmax(axis=1)
         max_ious = ious[np.arange(len(inside_index)), argmax_ious]
-        gt_argmax_ious = ious.argmax(axis=0)
+        try:
+            gt_argmax_ious = ious.argmax(axis=0)
+        except:
+            pdb.set_trace()
+            gt_argmax_ious = argmax_ious
         gt_max_ious = ious[gt_argmax_ious, np.arange(ious.shape[1])]
         gt_argmax_ious = np.where(ious == gt_max_ious)[0]
 
@@ -333,7 +346,7 @@ class ProposalCreator:
 
     def __init__(self,
                  parent_model,
-                 nms_thresh=0.7,
+                 nms_thresh=0.9,
                  n_train_pre_nms=12000,
                  n_train_post_nms=2000,
                  n_test_pre_nms=6000,
@@ -429,5 +442,9 @@ class ProposalCreator:
             thresh=self.nms_thresh)
         if n_post_nms > 0:
             keep = keep[:n_post_nms]
-        roi = roi[keep]
+        try:
+            roi = roi[keep]
+        except:
+            pdb.set_trace()
+            return roi
         return roi
