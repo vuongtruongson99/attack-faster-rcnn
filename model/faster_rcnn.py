@@ -10,6 +10,7 @@ from torch import nn
 from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
+from data.dataset import preprocess
 
 
 class FasterRCNN(nn.Module):
@@ -146,24 +147,33 @@ class FasterRCNN(nn.Module):
         """
         if preset == 'visualize':
             self.nms_thresh = 0.3
-            self.score_thresh = 0.9
+            self.score_thresh = 0.7
         elif preset == 'evaluate':
             self.nms_thresh = 0.3
             self.score_thresh = 0.9
+        elif preset == 'attack':
+            self.nms_thresh = 0.3
+            self.score_thresh = 0.8
         else:
             raise ValueError('preset must be visualize or evaluate')
 
-    def _suppress(self, raw_cls_bbox, raw_prob):
+    def _suppress(self, raw_cls_bbox, raw_prob, attack=False):
         bbox = list()
         label = list()
         score = list()
         # skip cls_id = 0 because it is the background class
         for l in range(1, self.n_class):
-            cls_bbox_l = raw_cls_bbox.reshape((-1, self.n_class, 4))[:, l, :]
             prob_l = raw_prob[:, l]
             mask = prob_l > self.score_thresh
-            cls_bbox_l = cls_bbox_l[mask]
+            if raw_cls_bbox is not None:
+                cls_bbox_l = raw_cls_bbox.reshape((-1, self.n_class, 4))[:, l, :]
+                cls_bbox_l = cls_bbox_l[mask]
             prob_l = prob_l[mask]
+            if attack:
+                label.append((l - 1) * np.ones((len(prob_l),)))
+                probs = raw_prob[mask]
+                return label, probs, mask
+
             keep = non_maximum_suppression(
                 cp.array(cls_bbox_l), self.nms_thresh, prob_l)
             keep = cp.asnumpy(keep)
@@ -176,7 +186,7 @@ class FasterRCNN(nn.Module):
         score = np.concatenate(score, axis=0).astype(np.float32)
         return bbox, label, score
 
-    def predict(self, imgs,sizes=None,visualize=False):
+    def predict(self, imgs,sizes=None,visualize=False, attack=False, adv=False):
         """Detect objects from images.
 
         This method predicts objects for each image.
@@ -206,7 +216,19 @@ class FasterRCNN(nn.Module):
         """
         self.eval()
         if visualize:
-            self.use_preset('visualize')
+            if not adv:
+                self.use_preset('visualize')
+            else:
+                self.use_preset('attack')
+            prepared_imgs = list()
+            sizes = list()
+            for img in imgs:
+                size = img.shape[1:]
+                img = preprocess(at.tonumpy(img))
+                prepared_imgs.append(img)
+                sizes.append(size)
+        elif attack:
+            self.use_preset('attack')
             prepared_imgs = list()
             sizes = list()
             for img in imgs:
@@ -224,7 +246,7 @@ class FasterRCNN(nn.Module):
             scale = img.shape[3] / size[1]
             roi_cls_loc, roi_scores, rois, _ = self(img, scale=scale)
             # We are assuming that batch size is 1.
-            roi_score = roi_scores.data
+            roi_score = roi_scores #roi_scores.data
             roi_cls_loc = roi_cls_loc.data
             roi = at.totensor(rois) / scale
 
@@ -246,19 +268,28 @@ class FasterRCNN(nn.Module):
             cls_bbox[:, 0::2] = (cls_bbox[:, 0::2]).clamp(min=0, max=size[0])
             cls_bbox[:, 1::2] = (cls_bbox[:, 1::2]).clamp(min=0, max=size[1])
 
-            prob = at.tonumpy(F.softmax(at.tovariable(roi_score), dim=1))
-
-            raw_cls_bbox = at.tonumpy(cls_bbox)
-            raw_prob = at.tonumpy(prob)
-
-            bbox, label, score = self._suppress(raw_cls_bbox, raw_prob)
+            if not attack:
+                prob = at.tonumpy(F.softmax(at.tovariable(roi_score), dim=1))
+                raw_cls_bbox = at.tonumpy(cls_bbox)
+                raw_prob = at.tonumpy(prob)
+                bbox, label, score = self._suppress(raw_cls_bbox, raw_prob)
+            else:
+                prob = F.softmax(roi_score,dim=1)
+                raw_cls_bbox = at.tonumpy(cls_bbox)
+                raw_prob = at.tonumpy(prob)
+                bbox, label, probs, mask = self._suppress(raw_cls_bbox,\
+                        prob,attack=True)
+                score = roi_score[mask]
             bboxes.append(bbox)
             labels.append(label)
             scores.append(score)
 
         self.use_preset('evaluate')
         self.train()
-        return bboxes, labels, scores
+        if not attack:
+            return bboxes, labels, scores
+        else:
+            return bbox,label,score
 
     def get_optimizer(self):
         """

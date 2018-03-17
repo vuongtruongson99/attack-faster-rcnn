@@ -165,6 +165,16 @@ def fig4vis(fig):
     return img_data[:, :, :3].transpose((2, 0, 1)) / 255.
 
 
+def fig4vis_unnorm(fig):
+    """
+    convert figure to ndarray
+    """
+    ax = fig.get_figure()
+    img_data = fig2data(ax).astype(np.int32)
+    plot.close()
+    # HWC->CHW
+    return img_data[:, :, :3].transpose((2, 0, 1))
+
 def visdom_bbox(*args, **kwargs):
     fig = vis_bbox(*args, **kwargs)
     data = fig4vis(fig)

@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 from torch.nn import functional as F
+from torch.autograd import Variable
 import torch as t
 from torch import nn
 
@@ -125,7 +126,11 @@ class RegionProposalNetwork(nn.Module):
                 rpn_locs[i].cpu().data.numpy(),
                 rpn_fg_scores[i].cpu().data.numpy(),
                 anchor, img_size,
-                scale=scale)
+               scale=scale)
+            if roi.size == 0:
+                print("No regions found")
+                return rpn_locs,rpn_scores,Variable(torch.zeros(1)).cuda(),\
+                        roi_indices,anchor
             batch_index = i * np.ones((len(roi),), dtype=np.int32)
             rois.append(roi)
             roi_indices.append(batch_index)

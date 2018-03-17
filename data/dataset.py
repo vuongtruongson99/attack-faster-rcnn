@@ -14,7 +14,7 @@ def inverse_normalize(img):
         img = img + (np.array([122.7717, 115.9465, 102.9801]).reshape(3, 1, 1))
         return img[::-1, :, :]
     # approximate un-normalize for visualize
-    return (img * 0.225 + 0.45).clip(min=0, max=1) * 255
+    return (img * 0.5 + 0.5).clip(min=0, max=1) * 255
 
 
 def pytorch_normalze(img):
@@ -22,8 +22,10 @@ def pytorch_normalze(img):
     https://github.com/pytorch/vision/issues/223
     return appr -1~1 RGB
     """
-    normalize = tvtsf.Normalize(mean=[0.485, 0.456, 0.406],
-                                std=[0.229, 0.224, 0.225])
+    # normalize = tvtsf.Normalize(mean=[0.485, 0.456, 0.406],
+                                # std=[0.229, 0.224, 0.225])
+    normalize = tvtsf.Normalize(mean=[0.5, 0.5, 0.5],
+                                std=[0.5, 0.5, 0.5])
     img = normalize(t.from_numpy(img))
     return img.numpy()
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import pdb
 import cupy as cp
 import pdb
 from model.utils.bbox_tools import bbox2loc, bbox_iou, loc2bbox
@@ -102,7 +103,10 @@ class ProposalTargetCreator(object):
         max_iou = iou.max(axis=1)
         # Offset range of classes from [0, n_fg_class - 1] to [1, n_fg_class].
         # The label with value 0 is the background.
-        gt_roi_label = label[gt_assignment] + 1
+        try:
+            gt_roi_label = label[gt_assignment] + 1
+        except:
+            pdb.set_trace()
 
         # Select foreground RoIs as those with >= pos_iou_thresh IoU.
         pos_index = np.where(max_iou >= self.pos_iou_thresh)[0]
@@ -347,8 +351,8 @@ class ProposalCreator:
     def __init__(self,
                  parent_model,
                  nms_thresh=0.9,
-                 n_train_pre_nms=12000,
-                 n_train_post_nms=2000,
+                 n_train_pre_nms=6000,
+                 n_train_post_nms=1000,
                  n_test_pre_nms=6000,
                  n_test_post_nms=300,
                  min_size=16

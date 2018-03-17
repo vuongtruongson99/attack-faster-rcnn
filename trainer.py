@@ -1,5 +1,6 @@
 from collections import namedtuple
 import time
+import torch
 from torch.nn import functional as F
 import pdb
 from model.utils.creator_tool import AnchorTargetCreator, ProposalTargetCreator
@@ -336,93 +337,113 @@ class VictimFasterRCNNTrainer(nn.Module):
         img_size = (H, W)
         features = self.faster_rcnn.extractor(imgs)
 
-        rpn_locs, rpn_scores, rois, roi_indices, anchor = \
-            self.faster_rcnn.rpn(features, img_size, scale)
+        if not features.sum()[0] == 0:
+            rpn_locs, rpn_scores, rois, roi_indices, anchor = \
+                self.faster_rcnn.rpn(features, img_size, scale)
+            # Since batch size is one, convert variables to singular form
+            bbox = bboxes[0]
+            label = labels[0]
+            rpn_score = rpn_scores[0]
+            rpn_loc = rpn_locs[0]
+            roi = rois
 
-        # Since batch size is one, convert variables to singular form
-        bbox = bboxes[0]
-        label = labels[0]
-        rpn_score = rpn_scores[0]
-        rpn_loc = rpn_locs[0]
-        roi = rois
+            # Sample RoIs and forward
+            # it's fine to break the computation graph of rois,
+            # consider them as constant input
+            if rois.size == 0:
+                print("Features are 0 for some reason")
+                losses = [Variable(torch.zeros(1)).cuda(),Variable(torch.zeros(1)).cuda(),\
+                                Variable(torch.zeros(1)).cuda(),Variable(torch.zeros(1)).cuda()]
+                losses = losses + [sum(losses)]
+                return losses,features
 
-        # Sample RoIs and forward
-        # it's fine to break the computation graph of rois,
-        # consider them as constant input
-        sample_roi, gt_roi_loc, gt_roi_label = self.proposal_target_creator(
-            roi,
-            at.tonumpy(bbox),
-            at.tonumpy(label),
-            self.loc_normalize_mean,
-            self.loc_normalize_std)
-        # NOTE it's all zero because now it only support for batch=1 now
-        sample_roi_index = t.zeros(len(sample_roi))
-        roi_cls_loc, roi_score = self.faster_rcnn.head(
-            features,
-            sample_roi,
-            sample_roi_index)
-
-        # ------------------ RPN losses -------------------#
-        if anchor.size != 0 :
-            gt_rpn_loc, gt_rpn_label = self.anchor_target_creator(
+            sample_roi, gt_roi_loc, gt_roi_label = self.proposal_target_creator(
+                roi,
                 at.tonumpy(bbox),
-                anchor,
-                img_size)
-            gt_rpn_label = at.tovariable(gt_rpn_label).long()
-            gt_rpn_loc = at.tovariable(gt_rpn_loc)
-            rpn_loc_loss = _fast_rcnn_loc_loss(
-                rpn_loc,
-                gt_rpn_loc,
-                gt_rpn_label.data,
-                self.rpn_sigma)
+                at.tonumpy(label),
+                self.loc_normalize_mean,
+                self.loc_normalize_std)
+            # NOTE it's all zero because now it only support for batch=1 now
+            sample_roi_index = t.zeros(len(sample_roi))
+            roi_cls_loc, roi_score = self.faster_rcnn.head(
+                features,
+                sample_roi,
+                sample_roi_index)
 
-            # NOTE: default value of ignore_index is -100 ...
-            rpn_cls_loss = F.cross_entropy(rpn_score, gt_rpn_label.cuda(), ignore_index=-1)
-            _gt_rpn_label = gt_rpn_label[gt_rpn_label > -1]
-            _rpn_score = at.tonumpy(rpn_score)[at.tonumpy(gt_rpn_label) > -1]
-            self.rpn_cm.add(at.totensor(_rpn_score, False), _gt_rpn_label.data.long())
+            # ------------------ RPN losses -------------------#
+            if anchor.size != 0 :
+                gt_rpn_loc, gt_rpn_label = self.anchor_target_creator(
+                    at.tonumpy(bbox),
+                    anchor,
+                    img_size)
+                gt_rpn_label = at.tovariable(gt_rpn_label).long()
+                gt_rpn_loc = at.tovariable(gt_rpn_loc)
+                rpn_loc_loss = _fast_rcnn_loc_loss(
+                    rpn_loc,
+                    gt_rpn_loc,
+                    gt_rpn_label.data,
+                    self.rpn_sigma)
+
+                # NOTE: default value of ignore_index is -100 ...
+                rpn_cls_loss = F.cross_entropy(rpn_score, gt_rpn_label.cuda(), ignore_index=-1)
+                _gt_rpn_label = gt_rpn_label[gt_rpn_label > -1]
+                _rpn_score = at.tonumpy(rpn_score)[at.tonumpy(gt_rpn_label) > -1]
+                self.rpn_cm.add(at.totensor(_rpn_score, False), _gt_rpn_label.data.long())
+                # adv_losses = self.attacker.forward(imgs.detach(),gt_rpn_label.cuda(), img_size, scale, self)
+                # adv_losses = LossTupleAdv(*adv_losses)
+                # self.update_meters(adv_losses,adv=True)
+            else:
+                rpn_cls_loss = 0
+                rpn_loc_loss = 0
+
+            # ------------------ ROI losses (fast rcnn loss) -------------------#
+            n_sample = roi_cls_loc.shape[0]
+            roi_cls_loc = roi_cls_loc.view(n_sample, -1, 4)
+            roi_loc = roi_cls_loc[t.arange(0, n_sample).long().cuda(), \
+                                  at.totensor(gt_roi_label).long()]
+            gt_roi_label = at.tovariable(gt_roi_label).long()
+            gt_roi_loc = at.tovariable(gt_roi_loc)
+
+            roi_loc_loss = _fast_rcnn_loc_loss(
+                roi_loc.contiguous(),
+                gt_roi_loc,
+                gt_roi_label.data,
+                self.roi_sigma)
+
+            roi_cls_loss = nn.CrossEntropyLoss()(roi_score, gt_roi_label.cuda())
+
+            self.roi_cm.add(at.totensor(roi_score, False), gt_roi_label.data.long())
+
+            losses = [rpn_loc_loss, rpn_cls_loss, roi_loc_loss, roi_cls_loss]
+            losses = losses + [sum(losses)]
+
+            if attack:
+                return roi_score,gt_roi_label
+            else:
+                return LossTuple(*losses)
         else:
-            rpn_cls_loss = 0
-            rpn_loc_loss = 0
+            print("Features are 0 for some reason")
+            losses = [Variable(torch.zeros(1)).cuda(),Variable(torch.zeros(1)).cuda(),\
+                            Variable(torch.zeros(1)).cuda(),Variable(torch.zeros(1)).cuda()]
+            losses = losses + [sum(losses)]
+            return losses
 
-        # ------------------ ROI losses (fast rcnn loss) -------------------#
-        n_sample = roi_cls_loc.shape[0]
-        roi_cls_loc = roi_cls_loc.view(n_sample, -1, 4)
-        roi_loc = roi_cls_loc[t.arange(0, n_sample).long().cuda(), \
-                              at.totensor(gt_roi_label).long()]
-        gt_roi_label = at.tovariable(gt_roi_label).long()
-        gt_roi_loc = at.tovariable(gt_roi_loc)
-
-        roi_loc_loss = _fast_rcnn_loc_loss(
-            roi_loc.contiguous(),
-            gt_roi_loc,
-            gt_roi_label.data,
-            self.roi_sigma)
-
-        roi_cls_loss = nn.CrossEntropyLoss()(roi_score, gt_roi_label.cuda())
-
-        self.roi_cm.add(at.totensor(roi_score, False), gt_roi_label.data.long())
-
-        losses = [rpn_loc_loss, rpn_cls_loss, roi_loc_loss, roi_cls_loss]
-        losses = losses + [sum(losses)]
-
-        if attack:
-            return roi_score,gt_roi_label,features
-        else:
-            return LossTuple(*losses),features
 
     def train_step(self, imgs, bboxes, labels, scale):
-        self.optimizer.zero_grad()
+        # self.optimizer.zero_grad()
         if not self.attack_mode:
-            losses,img_feats = self.forward(imgs, bboxes, labels, scale)
-            losses.total_loss.backward()
-            self.optimizer.step()
-        adv_losses = self.attacker.forward(imgs,labels, bboxes, scale, img_feats.detach(), self)
+            losses  = self.forward(imgs, bboxes, labels, scale)
+            # try:
+                # # losses.total_loss.backward()
+                # # self.optimizer.step()
+            # except:
+                # pass
+        adv_losses = self.attacker.forward(imgs,self, labels, bboxes, scale)
         adv_losses = LossTupleAdv(*adv_losses)
-        self.update_meters(losses)
+        # self.update_meters(losses)
         self.update_meters(adv_losses,adv=True)
 
-    def save(self, save_optimizer=False, save_path=None, **kwargs):
+    def save(self, save_optimizer=False, save_path=None, save_rcnn = True, **kwargs):
         """serialize models include optimizer and other info
         return path where the model-file is stored.
 
@@ -450,9 +471,9 @@ class VictimFasterRCNNTrainer(nn.Module):
             if not self.attack_mode:
                 for k_, v_ in kwargs.items():
                     save_path += '_%s' % v_
-            self.attacker.save('checkpoints/L4_attack_vggface_faster_rcnn.pth')
-
-        t.save(save_dict, save_path)
+            self.attacker.save('checkpoints/max_min_attack_2.pth')
+        if save_rcnn:
+            t.save(save_dict, save_path)
         self.vis.save([self.vis.env])
         return save_path
 
