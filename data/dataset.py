@@ -6,8 +6,11 @@ from skimage import transform as sktsf
 from torchvision import transforms as tvtsf
 from . import util
 import numpy as np
+import pandas as pd
 from utils.config import opt
-import pdb
+from util import  read_image
+import torch
+import ipdb
 
 def inverse_normalize(img):
     if opt.caffe_pretrain:
@@ -124,6 +127,39 @@ class Dataset:
     def __len__(self):
         return len(self.db)
 
+class FaceLandmarksDataset(Dataset):
+    """Face Landmarks dataset."""
+
+    def __init__(self):
+        """
+        Args:
+            csv_file (string): Path to the csv file with annotations.
+            root_dir (string): Directory with all the images.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        self.csv_file = '../ext_face/cropped_global_300w.csv'
+        self.globalDF = pd.read_csv(self.csv_file)
+	self.g_images = self.globalDF['imgPath']
+        self.save_dir = '/media/drive/ibug/300W_cropped/frcnn/'
+        self.save_dir_adv = '/media/drive/ibug/300W_cropped/frcnn_adv/'
+        self.save_dir_comb = '/media/drive/ibug/300W_cropped/frcnn_comb/'
+
+    def __len__(self):
+        return len(self.g_images)
+
+    def __getitem__(self, idx):
+        img = read_image(self.g_images[idx])
+        _, H, W = img.shape
+        scale = H / H
+        try:
+            img = preprocess(img)
+            img, params = util.random_flip(
+                img, x_random=True, return_param=True)
+        except:
+            print("Exception")
+	img = torch.from_numpy(img)[None]
+        return img,self.g_images[idx],scale
 
 class TestDataset:
     def __init__(self, opt, split='test', use_difficult=True):

@@ -1,4 +1,5 @@
 from __future__ import division
+import ipdb
 import torch as t
 import numpy as np
 import cupy as cp
@@ -150,10 +151,10 @@ class FasterRCNN(nn.Module):
             self.score_thresh = 0.7
         elif preset == 'evaluate':
             self.nms_thresh = 0.3
-            self.score_thresh = 0.9
+            self.score_thresh = 0.7
         elif preset == 'attack':
             self.nms_thresh = 0.3
-            self.score_thresh = 0.8
+            self.score_thresh = 0.7
         else:
             raise ValueError('preset must be visualize or evaluate')
 
@@ -186,7 +187,8 @@ class FasterRCNN(nn.Module):
         score = np.concatenate(score, axis=0).astype(np.float32)
         return bbox, label, score
 
-    def predict(self, imgs,sizes=None,visualize=False, attack=False, adv=False):
+    def predict(self, imgs,sizes=None,visualize=False, attack=False, \
+            adv=False, new_score=0):
         """Detect objects from images.
 
         This method predicts objects for each image.
@@ -241,6 +243,9 @@ class FasterRCNN(nn.Module):
         bboxes = list()
         labels = list()
         scores = list()
+        if new_score != 0:
+            self.score_thresh = new_score
+
         for img, size in zip(prepared_imgs, sizes):
             img = t.autograd.Variable(at.totensor(img).float()[None], volatile=True)
             scale = img.shape[3] / size[1]

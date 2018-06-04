@@ -1,6 +1,7 @@
+from __future__ import division
 import numpy as np
 import numpy as xp
-
+import ipdb
 import six
 from six import __init__
 
@@ -133,11 +134,13 @@ def bbox2loc(src_bbox, dst_bbox):
     height = xp.maximum(height, eps)
     width = xp.maximum(width, eps)
 
-    dy = (base_ctr_y - ctr_y) / height
-    dx = (base_ctr_x - ctr_x) / width
-    dh = xp.log((base_height / height).clip(min=1e-5))
-    dw = xp.log((base_width / width)).clip(min=1e-5)
-
+    try:
+        dy = (base_ctr_y - ctr_y) / height
+        dx = (base_ctr_x - ctr_x) / width
+        dh = xp.log((base_height / height).clip(min=1e-5))
+        dw = xp.log((base_width / width)).clip(min=1e-5)
+    except:
+        ipdb.set_trace()
     loc = xp.vstack((dy, dx, dh, dw)).transpose()
     return loc
 
