@@ -407,10 +407,75 @@ class DCGAN(nn.Module):
                         break
                 return losses
 
-	def perturb(self, inputs, epsilon=10, save_perturb=None):
+	def perturb(self, inputs, epsilon=1, save_perturb=None):
 		perturbation = self.generator(inputs)
 		adv_inputs = inputs + epsilon*perturbation
 		adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
+                if save_perturb is not None:
+                    clamped = torch.clamp(perturbation,-1.0,1.0)
+                    return adv_inputs,clamped
+                else:
+                    return adv_inputs
+
+	def save(self, fn):
+		torch.save(self.generator.state_dict(), fn)
+
+	def load(self, fn):
+		self.generator.load_state_dict(torch.load(fn))
+
+class Inference_DCGAN(nn.Module):
+	def __init__(self, num_channels=3, ngf=100, cg=0.05, learning_rate=1e-4, train_adv=False):
+		"""
+		Initialize a Inference_DCGAN. Perturbations from the GAN are added to the inputs to
+		create adversarial attacks.
+
+		- num_channels is the number of channels in the input
+		- ngf is size of the conv layers
+		- cg is the normalization constant for perturbation (higher means encourage smaller perturbation)
+		"""
+                super(Inference_DCGAN, self).__init__()
+		self.generator = nn.Sequential(
+			# input is (nc) x 32 x 32
+			nn.Conv2d(num_channels, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+                        #nn.Dropout2d(),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+                        #nn.Dropout2d(),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+                        #nn.Dropout(),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+                        #nn.Dropout(),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 3, 1, 1, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. 48 x 32 x 32
+			nn.Conv2d(ngf, ngf, 1, 1, 0, bias=True),
+			nn.LeakyReLU(0.2, inplace=True),
+			# state size. 3 x 32 x 32
+			nn.Conv2d(ngf, num_channels, 1, 1, 0, bias=True),
+			nn.Tanh()
+		)
+
+                self.cuda = torch.cuda.is_available()
+                if self.cuda:
+                        self.generator.cuda()
+                        self.generator = torch.nn.DataParallel(self.generator, device_ids=range(torch.cuda.device_count()))
+                        cudnn.benchmark = True
+
+	def forward(self, inputs, epsilon=1, save_perturb=None):
+		perturbation = self.generator.module(inputs)
+		adv_inputs = inputs + epsilon*perturbation
+		# adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
+		adv_inputs.clamp(-1.0, 1.0)
                 if save_perturb is not None:
                     clamped = torch.clamp(perturbation,-1.0,1.0)
                     return adv_inputs,clamped
