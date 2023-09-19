@@ -40,7 +40,7 @@ def tovariable(data):
 def scalar(data):
     if isinstance(data, np.ndarray):
         return data.reshape(1)[0]
-    if isinstance(data, t._TensorBase):
+    if isinstance(data, t.cuda.LongTensor):
         return data.view(1)[0]
     if isinstance(data, t.autograd.Variable):
         return data.data.view(1)[0]

@@ -423,7 +423,7 @@ class ProposalCreator:
             roi[:, slice(1, 4, 2)], 0, img_size[1])
 
         # Remove predicted boxes with either height or width < threshold.
-        min_size = self.min_size * scale
+        min_size = self.min_size * np.float32(scale)
         hs = roi[:, 2] - roi[:, 0]
         ws = roi[:, 3] - roi[:, 1]
         keep = np.where((hs >= min_size) & (ws >= min_size))[0]

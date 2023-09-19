@@ -337,11 +337,12 @@ class VictimFasterRCNNTrainer(nn.Module):
         img_size = (H, W)
         features = self.faster_rcnn.extractor(imgs)
 
-        if not features.sum()[0] == 0:
+        if not sum(features.size()) == 0:
             rpn_locs, rpn_scores, rois, roi_indices, anchor = \
                 self.faster_rcnn.rpn(features, img_size, scale)
             # Since batch size is one, convert variables to singular form
             bbox = bboxes[0]
+            # print(type(bbox), bbox)
             label = labels[0]
             rpn_score = rpn_scores[0]
             rpn_loc = rpn_locs[0]
@@ -439,6 +440,8 @@ class VictimFasterRCNNTrainer(nn.Module):
                 self.update_meters(losses)
             except:
                 pass
+
+            return losses
         else:
             adv_losses = self.attacker.forward(imgs,self, labels, bboxes, scale)
             adv_losses = LossTupleAdv(*adv_losses)

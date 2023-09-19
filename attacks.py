@@ -198,7 +198,7 @@ class CarliniWagner(object):
 		optimizer = optim.Adam([modifier_var], lr=self.learning_rate)
 
 		for outer_step in range(self.binary_search_steps):
-			if self.verbose: print '\nsearch step: {0}'.format(outer_step)
+			if self.verbose: print('\nsearch step: {0}'.format(outer_step))
 			best_l2 = [1e10] * batch_size
 			best_score = [-1] * batch_size
 
@@ -216,14 +216,14 @@ class CarliniWagner(object):
 					input_vars, label_vars, scale_const_var)
 
 				if step % 10 == 0 or step == self.max_iterations - 1:
-					if self.verbose: print "Step: {0:>4}, loss: {1:6.6f}, dist: {2:8.6f}, modifier mean: {3:.6e}".format(
-						step, loss, dist.mean(), modifier_var.data.mean())
+					if self.verbose: print("Step: {0:>4}, loss: {1:6.6f}, dist: {2:8.6f}, modifier mean: {3:.6e}".format(
+						step, loss, dist.mean(), modifier_var.data.mean()))
 
 
 				# abort early if loss is too small
 				if self.abort_early and step % (self.max_iterations // 10) == 0:
 					if loss > prev_loss * 0.9999:
-						if self.verbose: print 'Aborting early...'
+						if self.verbose: print('Aborting early...')
 						break
 
 					prev_loss = loss
@@ -267,7 +267,7 @@ class CarliniWagner(object):
 				else:
 					batch_failure += 1
 
-			if self.verbose: print 'failures: {0} successes: {1}'.format(batch_failure, batch_success)
+			if self.verbose: print('failures: {0} successes: {1}'.format(batch_failure, batch_success))
 			sys.stdout.flush()
 
 		# if no good adv attack, then equivalent to using base image
@@ -293,7 +293,7 @@ class DCGAN(nn.Module):
 		- learning_rate is learning rate for generator optimizer
 		- train_adv is whether the model being attacked should be trained adversarially
 		"""
-                super(DCGAN, self).__init__()
+		super(DCGAN, self).__init__()
 		self.generator = nn.Sequential(
 			# input is (nc) x 32 x 32
 			nn.Conv2d(num_channels, ngf, 3, 1, 1, bias=True),
@@ -329,7 +329,7 @@ class DCGAN(nn.Module):
 
 		if self.cuda:
 			self.generator.cuda()
-                        self.generator = torch.nn.DataParallel(self.generator, device_ids=range(torch.cuda.device_count()))
+			self.generator = torch.nn.DataParallel(self.generator, device_ids=range(torch.cuda.device_count()))
 			cudnn.benchmark = True
 
 		# self.criterion = nn.NLLLoss()
@@ -337,85 +337,85 @@ class DCGAN(nn.Module):
 		self.cg = cg
 		self.optimizer = optim.Adam(self.generator.parameters(), lr=learning_rate)
 		self.train_adv = train_adv
-                self.max_iter = 20
-                self.c_misclassify = 1
-                self.confidence = 0
+		self.max_iter = 20
+		self.c_misclassify = 1
+		self.confidence = 0
 
 	def forward(self, inputs, model, labels=None, bboxes=None, scale=None,\
                 model_feats=None, model_optimizer=None, *args):
-                """
-                Given a set of inputs, return the perturbed inputs (as Variable objects),
-                the predictions for the inputs from the model, and the percentage of inputs
-                unsucessfully perturbed (i.e., model accuracy).
+		"""
+		Given a set of inputs, return the perturbed inputs (as Variable objects),
+		the predictions for the inputs from the model, and the percentage of inputs
+		unsucessfully perturbed (i.e., model accuracy).
 
 		If self.train_adversarial is True, train the model adversarially.
 
-                The adversarial inputs is a python list of tensors.
-                The predictions is a numpy array of classes, with length equal to the number of inputs.
-                """
-                num_unperturbed = 10
-                iter_count = 0
-                loss_perturb = 20
-                loss_misclassify = 10
-                while loss_misclassify > 0 and loss_perturb > 1:
-                    perturbation = self.generator(inputs)
-                    adv_inputs = inputs + perturbation
-                    adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
-                    scores,gt_labels  = model(adv_inputs,\
-                            bboxes,labels,scale,attack=True)
-                    probs = F.softmax(scores)
-                    suppress_labels,probs,mask = model.faster_rcnn._suppress(None,probs,attack=True)
-                    scores = scores[mask]
-                    gt_labels = gt_labels[mask]
-                    self.optimizer.zero_grad()
-                    try:
-                        one_hot_labels = torch.zeros(gt_labels.size() + (2,))
-                        if self.cuda: one_hot_labels = one_hot_labels.cuda()
-                        one_hot_labels.scatter_(1, gt_labels.unsqueeze(1).data, 1.)
-                        labels_vars = Variable(one_hot_labels, requires_grad=False)
-                        real = (labels_vars * scores).sum(1)
-                        other = ((1. - labels_vars) * scores - labels_vars * 10000.).max(1)[0]
+		The adversarial inputs is a python list of tensors.
+		The predictions is a numpy array of classes, with length equal to the number of inputs.
+		"""
+		num_unperturbed = 10
+		iter_count = 0
+		loss_perturb = 20
+		loss_misclassify = 10
+		while loss_misclassify > 0 and loss_perturb > 1:
+			perturbation = self.generator(inputs)
+			adv_inputs = inputs + perturbation
+			adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
+			scores,gt_labels  = model(adv_inputs,\
+					bboxes,labels,scale,attack=True)
+			probs = F.softmax(scores)
+			suppress_labels,probs,mask = model.faster_rcnn._suppress(None,probs,attack=True)
+			scores = scores[mask]
+			gt_labels = gt_labels[mask]
+			self.optimizer.zero_grad()
+			try:
+				one_hot_labels = torch.zeros(gt_labels.size() + (2,))
+				if self.cuda: one_hot_labels = one_hot_labels.cuda()
+				one_hot_labels.scatter_(1, gt_labels.unsqueeze(1).data, 1.)
+				labels_vars = Variable(one_hot_labels, requires_grad=False)
+				real = (labels_vars * scores).sum(1)
+				other = ((1. - labels_vars) * scores - labels_vars * 10000.).max(1)[0]
 
-                        # the greater the likelihood of label, the greater the loss
-                        loss1 = torch.clamp(real - other + self.confidence, min=0.)  # equiv to max(..., 0.)
-                        loss_misclassify = self.c_misclassify*torch.sum(loss1)
-                        loss_match =  Variable(torch.zeros(1)).cuda()
-                        loss_perturb = self.cg*L2_dist(inputs,adv_inputs)
-                        loss_total = loss_misclassify + loss_perturb
-                        loss_total.backward()
-                        self.optimizer.step()
-                    except:
-                        loss_misclassify = Variable(torch.zeros(1)).cuda()
-                        loss_match =  Variable(torch.zeros(1)).cuda()
-                        loss_perturb = self.cg*L2_dist(inputs,adv_inputs)
-                        loss_total = loss_misclassify + loss_perturb
-                        loss_total.backward()
+				# the greater the likelihood of label, the greater the loss
+				loss1 = torch.clamp(real - other + self.confidence, min=0.)  # equiv to max(..., 0.)
+				loss_misclassify = self.c_misclassify*torch.sum(loss1)
+				loss_match =  Variable(torch.zeros(1)).cuda()
+				loss_perturb = self.cg*L2_dist(inputs,adv_inputs)
+				loss_total = loss_misclassify + loss_perturb
+				loss_total.backward()
+				self.optimizer.step()
+			except:
+				loss_misclassify = Variable(torch.zeros(1)).cuda()
+				loss_match =  Variable(torch.zeros(1)).cuda()
+				loss_perturb = self.cg*L2_dist(inputs,adv_inputs)
+				loss_total = loss_misclassify + loss_perturb
+				loss_total.backward()
 
-                    print('Loss NLL is %f, perturb %f, total loss %f' % \
-                            (loss_misclassify.data,loss_perturb.data,loss_total.data))
-                    # optimizer step for the generator
+			print('Loss NLL is %f, perturb %f, total loss %f' % \
+					(loss_misclassify.data,loss_perturb.data,loss_total.data))
+			# optimizer step for the generator
 
-                    if loss_misclassify.data !=0:
-                        predictions = torch.max(F.log_softmax(scores), 1)[1].cpu().numpy()
-                        num_unperturbed = (predictions == gt_labels).sum()
-                        print("Number of images unperturbed is %d out of %d" % \
-                                (num_unperturbed,len(gt_labels)))
-                    iter_count = iter_count + 1
-                    losses = [Variable(loss_misclassify.data),Variable(torch.zeros(1)).cuda(),Variable(loss_perturb.data)]
-                    losses = losses + [sum(losses)]
-                    if iter_count > self.max_iter:
-                        break
-                return losses
+			if loss_misclassify.data !=0:
+				predictions = torch.max(F.log_softmax(scores), 1)[1].cpu().numpy()
+				num_unperturbed = (predictions == gt_labels).sum()
+				print("Number of images unperturbed is %d out of %d" % \
+						(num_unperturbed,len(gt_labels)))
+			iter_count = iter_count + 1
+			losses = [Variable(loss_misclassify.data),Variable(torch.zeros(1)).cuda(),Variable(loss_perturb.data)]
+			losses = losses + [sum(losses)]
+			if iter_count > self.max_iter:
+				break
+		return losses
 
 	def perturb(self, inputs, epsilon=1, save_perturb=None):
 		perturbation = self.generator(inputs)
 		adv_inputs = inputs + epsilon*perturbation
 		adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
-                if save_perturb is not None:
-                    clamped = torch.clamp(perturbation,-1.0,1.0)
-                    return adv_inputs,clamped
-                else:
-                    return adv_inputs
+		if save_perturb is not None:
+			clamped = torch.clamp(perturbation,-1.0,1.0)
+			return adv_inputs,clamped
+		else:
+			return adv_inputs
 
 	def save(self, fn):
 		torch.save(self.generator.state_dict(), fn)
@@ -433,7 +433,7 @@ class Inference_DCGAN(nn.Module):
 		- ngf is size of the conv layers
 		- cg is the normalization constant for perturbation (higher means encourage smaller perturbation)
 		"""
-                super(Inference_DCGAN, self).__init__()
+		super(Inference_DCGAN, self).__init__()
 		self.generator = nn.Sequential(
 			# input is (nc) x 32 x 32
 			nn.Conv2d(num_channels, ngf, 3, 1, 1, bias=True),
@@ -465,22 +465,22 @@ class Inference_DCGAN(nn.Module):
 			nn.Tanh()
 		)
 
-                self.cuda = torch.cuda.is_available()
-                if self.cuda:
-                        self.generator.cuda()
-                        self.generator = torch.nn.DataParallel(self.generator, device_ids=range(torch.cuda.device_count()))
-                        cudnn.benchmark = True
+		self.cuda = torch.cuda.is_available()
+		if self.cuda:
+			self.generator.cuda()
+			self.generator = torch.nn.DataParallel(self.generator, device_ids=range(torch.cuda.device_count()))
+			cudnn.benchmark = True
 
 	def forward(self, inputs, epsilon=1, save_perturb=None):
 		perturbation = self.generator.module(inputs)
 		adv_inputs = inputs + epsilon*perturbation
 		# adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
 		adv_inputs.clamp(-1.0, 1.0)
-                if save_perturb is not None:
-                    clamped = torch.clamp(perturbation,-1.0,1.0)
-                    return adv_inputs,clamped
-                else:
-                    return adv_inputs
+		if save_perturb is not None:
+			clamped = torch.clamp(perturbation,-1.0,1.0)
+			return adv_inputs,clamped
+		else:
+			return adv_inputs
 
 	def save(self, fn):
 		torch.save(self.generator.state_dict(), fn)
@@ -500,7 +500,7 @@ class RPN_attack(nn.Module):
 		- learning_rate is learning rate for generator optimizer
 		- train_adv is whether the model being attacked should be trained adversarially
 		"""
-                super(RPN_attack, self).__init__()
+		super(RPN_attack, self).__init__()
 		self.generator = nn.Sequential(
 			# input is (nc) x 32 x 32
 			nn.Conv2d(num_channels, ngf, 3, 1, 1, bias=False),
@@ -544,64 +544,64 @@ class RPN_attack(nn.Module):
 		self.cg = cg
 		self.optimizer = optim.Adam(self.generator.parameters(), lr=learning_rate)
 		self.train_adv = train_adv
-                self.max_iter = 1
-                self.c_misclassify = 1
+		self.max_iter = 1
+		self.c_misclassify = 1
 
 	def forward(self, inputs, labels, img_size, scale, model, model_optimizer=None, *args):
-                """
-                Given a set of inputs, return the perturbed inputs (as Variable objects),
-                the predictions for the inputs from the model, and the percentage of inputs
-                unsucessfully perturbed (i.e., model accuracy).
+		"""
+		Given a set of inputs, return the perturbed inputs (as Variable objects),
+		the predictions for the inputs from the model, and the percentage of inputs
+		unsucessfully perturbed (i.e., model accuracy).
 
 		If self.train_adversarial is True, train the model adversarially.
 
-                The adversarial inputs is a python list of tensors.
-                The predictions is a numpy array of classes, with length equal to the number of inputs.
-                """
-                num_unperturbed = 10
-                iter_count = 0
-                while num_unperturbed > 5 and iter_count < self.max_iter:
-                    perturbation = self.generator(inputs)
-                    adv_inputs = inputs + perturbation
-                    adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
-                    adv_features = model.faster_rcnn.extractor(adv_inputs)
-                    adv_rpn_locs, adv_rpn_scores, adv_rois, adv_roi_indices, anchor = \
-                        model.faster_rcnn.rpn(adv_features, img_size, scale)
-                    # log_probs = F.log_softmax(adv_rpn_scores.squeeze(),dim=1)
-                    # exponent value (p) in the norm needs to be 4 or higher! IMPORTANT!
-                    self.optimizer.zero_grad()
-                    loss_NLL = self.c_misclassify*torch.exp(\
-                            -1*self.criterion(adv_rpn_scores.squeeze(),labels))
-                    loss_match = Variable(torch.zeros(1)).cuda()
-                    loss_perturb =  0.0001 * (torch.norm(perturbation,2))
-                    loss_total = loss_NLL + loss_perturb#sum([loss_NLL,loss_perturb])
-                    loss_total.backward()
+		The adversarial inputs is a python list of tensors.
+		The predictions is a numpy array of classes, with length equal to the number of inputs.
+		"""
+		num_unperturbed = 10
+		iter_count = 0
+		while num_unperturbed > 5 and iter_count < self.max_iter:
+			perturbation = self.generator(inputs)
+			adv_inputs = inputs + perturbation
+			adv_inputs = torch.clamp(adv_inputs, -1.0, 1.0)
+			adv_features = model.faster_rcnn.extractor(adv_inputs)
+			adv_rpn_locs, adv_rpn_scores, adv_rois, adv_roi_indices, anchor = \
+				model.faster_rcnn.rpn(adv_features, img_size, scale)
+			# log_probs = F.log_softmax(adv_rpn_scores.squeeze(),dim=1)
+			# exponent value (p) in the norm needs to be 4 or higher! IMPORTANT!
+			self.optimizer.zero_grad()
+			loss_NLL = self.c_misclassify*torch.exp(\
+					-1*self.criterion(adv_rpn_scores.squeeze(),labels))
+			loss_match = Variable(torch.zeros(1)).cuda()
+			loss_perturb =  0.0001 * (torch.norm(perturbation,2))
+			loss_total = loss_NLL + loss_perturb#sum([loss_NLL,loss_perturb])
+			loss_total.backward()
 
-                    print('Loss NLL is %f, match %f, perturb %f, total loss %f' % \
-                            (loss_NLL.data,loss_match.data,torch.norm(perturbation,2).data[0],loss_total.data))
-                    # optimizer step for the generator
-                    self.optimizer.step()
+			print('Loss NLL is %f, match %f, perturb %f, total loss %f' % \
+					(loss_NLL.data,loss_match.data,torch.norm(perturbation,2).data[0],loss_total.data))
+			# optimizer step for the generator
+			self.optimizer.step()
 
-                    # optimizer step for the discriminator (if training adversarially)
-                    # if self.train_adv and model_optimizer:
-                            # discriminator_loss = self.criterion(predictions, labels)
-                            # model_optimizer.zero_grad()
-                            # discriminator_loss.backward()
-                            # model_optimizer.step()
+			# optimizer step for the discriminator (if training adversarially)
+			# if self.train_adv and model_optimizer:
+					# discriminator_loss = self.criterion(predictions, labels)
+					# model_optimizer.zero_grad()
+					# discriminator_loss.backward()
+					# model_optimizer.step()
 
-                    # print perturbation.data.mean(), inputs.data.mean()
-                    # print loss.data[0], torch.norm(perturbation, 2).data[0], torch.norm(inputs, 2).data[0]
+			# print perturbation.data.mean(), inputs.data.mean()
+			# print loss.data[0], torch.norm(perturbation, 2).data[0], torch.norm(inputs, 2).data[0]
 
-                    # prep the predictions and inputs to be returned
-                    predictions = torch.max(F.log_softmax(adv_rpn_scores.squeeze(),dim=1), 1)[1].cpu().numpy()
-                    num_unperturbed = (predictions == labels.data.cpu().numpy()).sum()
-                    print("Number of images unperturbed is %d out of %d" % \
-                            (num_unperturbed,len(labels)))
-                    iter_count = iter_count + 1
-                    losses = [loss_NLL,loss_match,loss_perturb]
-                    losses = losses + [sum(losses)]
-                    return losses
-                # adv_inputs = [ adv_inputs[i] for i in range(inputs.size(0)) ]
+			# prep the predictions and inputs to be returned
+			predictions = torch.max(F.log_softmax(adv_rpn_scores.squeeze(),dim=1), 1)[1].cpu().numpy()
+			num_unperturbed = (predictions == labels.data.cpu().numpy()).sum()
+			print("Number of images unperturbed is %d out of %d" % \
+					(num_unperturbed,len(labels)))
+			iter_count = iter_count + 1
+			losses = [loss_NLL,loss_match,loss_perturb]
+			losses = losses + [sum(losses)]
+			return losses
+		# adv_inputs = [ adv_inputs[i] for i in range(inputs.size(0)) ]
 
 
 	def perturb(self, inputs, epsilon=1.0):

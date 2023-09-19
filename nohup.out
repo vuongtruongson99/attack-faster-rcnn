@@ -1,0 +1,171 @@
+INFO:root:Application Started
+INFO:root:Working directory: /home/son/.visdom
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/visdom/server/__main__.py", line 16, in <module>
+    download_scripts_and_run()
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/visdom/server/run_server.py", line 236, in download_scripts_and_run
+    main()
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/visdom/server/run_server.py", line 220, in main
+    start_server(
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/visdom/server/run_server.py", line 55, in start_server
+    app.listen(port, max_buffer_size=1024**3)
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/tornado/web.py", line 2207, in listen
+    server.listen(
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/tornado/tcpserver.py", line 183, in listen
+    sockets = bind_sockets(
+              ^^^^^^^^^^^^^
+  File "/home/son/miniconda3/envs/yolo8/lib/python3.11/site-packages/tornado/netutil.py", line 162, in bind_sockets
+    sock.bind(sockaddr)
+OSError: [Errno 98] Address already in use
+Checking for scripts.
+Downloading scripts, this may take a little while
+It's Alive!
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.47ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.42ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.48ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.29ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.28ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.24ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.27ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.24ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.25ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.21ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.25ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.24ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.31ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.35ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.41ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.40ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.35ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.31ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.25ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.51ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.50ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.25ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.26ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.24ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.35ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.32ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.26ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.29ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.21ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.25ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.26ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.21ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.21ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.17ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.24ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.31ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.27ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.21ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.31ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.27ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.30ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.21ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.17ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.24ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.18ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.29ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.28ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.18ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.25ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.19ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.17ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.41ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.66ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.17ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.27ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.24ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.20ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.22ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.18ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
+INFO:tornado.access:200 POST /env/faster-rcnn (127.0.0.1) 0.23ms
+INFO:tornado.access:101 GET /vis_socket (127.0.0.1) 0.25ms
+INFO:root:Opened visdom socket from ip: 127.0.0.1
