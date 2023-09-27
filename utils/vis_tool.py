@@ -94,7 +94,7 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
 
     """
 
-    label_names = list(WIDER_BBOX_LABEL_NAMES) + ['bg']
+    label_names = list(VOC_BBOX_LABEL_NAMES) + ['bg']
     # add for index `-1`
     if label is not None and not len(bbox) == len(label):
         raise ValueError('The length of label must be same as that of bbox')

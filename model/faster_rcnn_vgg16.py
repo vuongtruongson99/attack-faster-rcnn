@@ -17,6 +17,10 @@ def decom_vgg16():
             model.load_state_dict(t.load(opt.caffe_pretrain_path))
     else:
         model = vgg16(not opt.load_path)
+    # caffe_pretrain_path = '/home/son/Desktop/Research/simple-faster-rcnn-pytorch/checkpoints/vgg16_caffe.pth'
+    # model = vgg16(pretrained=False)
+    # model.load_state_dict(t.load(caffe_pretrain_path))
+    # print("Loaded pretrained VGG16")
 
     features = list(model.features)[:30]
     classifier = model.classifier
